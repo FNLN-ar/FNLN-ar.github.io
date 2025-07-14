@@ -27,74 +27,78 @@
   };
 </script>
 
-  <!-- p5.js library -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<!-- ✅ p5.js library -->
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-  <!-- p5 sketch -->
-  <script>
-    let bubbles = [];
+<!-- ✅ Main Sketch + Logic -->
+<script>
+let bgColor = [139, 148, 153, 100]; // default (gray)
+let bubbles = [];
 
-    function setup() {
-      createCanvas(windowWidth, windowHeight);
-      for (let i = 0; i <25; i++) {
-        bubbles.push(new Bubble());
-      }
-    }
+fetch("https://ffc4f64d95bb.ngrok-free.app/info", {
+  headers: {
+    "ngrok-skip-browser-warning": "true"
+  }
+})
+.then(res => res.json())
+.then(data => {
+  document.body.innerHTML += `<h1 style="color: white; position: absolute; top: 0;">${data.wordOfDay}</h1>`;
 
-    function draw() {
-  background(139, 148, 153, 100); // Normal background
+  const colorMap = {
+    gray: [139, 148, 153, 100],
+    orange: [245, 170, 66, 100],
+    blue: [122, 177, 215, 100],
+    green: [76, 175, 80, 100]
+  };
+  bgColor = colorMap[data.colorOfDay] || bgColor;
+});
 
-  // Define viewport boundaries (centered)
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  for (let i = 0; i < 25; i++) {
+    bubbles.push(new Bubble());
+  }
+}
+
+function draw() {
+  background(...bgColor);
+
   let viewportX = width / 7;
   let viewportY = height / 60;
   let viewportW = width / 1.5;
-  let viewportH = height / 1;
+  let viewportH = height;
 
-  // Draw bubbles in full space
   for (let b of bubbles) {
     b.update();
     b.display();
   }
 
-  // Overlay background over areas outside viewport (to hide bubbles)
   push();
-  fill(139, 148, 153); // Background color
+  fill(...bgColor);
   noStroke();
-
-  // Left and right cover
-  rect(0, 0, viewportX, height); // Left side
-  rect(viewportX + viewportW, 0, width - (viewportX + viewportW), height); // Right side
-
-  // Top and bottom cover
-  rect(viewportX, 0, viewportW, viewportY); // Top side
-  rect(viewportX, viewportY + viewportH, viewportW, height - (viewportY + viewportH)); // Bottom side
-
+  rect(0, 0, viewportX, height);
+  rect(viewportX + viewportW, 0, width - (viewportX + viewportW), height);
+  rect(viewportX, 0, viewportW, viewportY);
+  rect(viewportX, viewportY + viewportH, viewportW, height - (viewportY + viewportH));
   pop();
 }
 
-    function windowResized() {
-      resizeCanvas(windowWidth, windowHeight);
-    }
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
 
-    class Bubble {
+class Bubble {
   constructor() {
     this.centerX = random(width);
     this.centerY = random(height);
     this.angle = random(TWO_PI);
     this.radius = random(20, 100);
-
-    // Three fixed bubble sizes
-    const sizes = [10, 10, 20, 20, 40]; // More small & medium, fewer big
-this.size = random(sizes);
-
-    // Three shades of gray
-    const colors = [
-    color(175, 180, 184, 150),  // Soft Gray
-    color(229,229, 231, 150),  // Light Gray
-    color(240, 240, 240, 150)   // Near White
-    ];
-    this.color = random(colors);
-
+    this.size = random([10, 10, 20, 20, 40]);
+    this.color = random([
+      color(255, 255, 255, 150),
+      color(229,229, 231, 150),
+      color(175, 180, 184, 150)
+    ]);
     this.speed = random(0.005, 0.01);
   }
 
@@ -109,31 +113,7 @@ this.size = random(sizes);
     fill(this.color);
     ellipse(this.x, this.y, this.size * 2);
   }
-
-      update() {
-        this.angle += this.speed;
-        this.x = this.centerX + cos(this.angle) * this.radius;
-        this.y = this.centerY + sin(this.angle) * this.radius;
-      }
-
-      display() {
-        noStroke();
-        fill(this.color);
-        ellipse(this.x, this.y, this.size * 2);
-      }
-    }
-  </script>
-
-<script>
-fetch("https://ffc4f64d95bb.ngrok-free.app/info", {
-  headers: {
-    "ngrok-skip-browser-warning": "true"
-  }
-})
-.then(res => res.json())
-.then(data => {
-  document.body.innerHTML += `<h1>${data.wordOfDay}</h1>`;
-});
+}
 </script>
 
 </body>
