@@ -10,6 +10,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
+      background: black;
     }
     canvas {
       display: block;
@@ -27,13 +28,18 @@
   };
 </script>
 
-<!-- ✅ p5.js library -->
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-<!-- ✅ Main Sketch + Logic -->
 <script>
-let bgColor = [139, 148, 153, 100]; // default (gray)
+let bgColor = [139, 148, 153]; // default background (gray)
+let bubblePalette = [
+  [175, 180, 184, 150], // Soft Gray
+  [229, 229, 231, 150], // Light Gray
+  [240, 240, 240, 150]  // Near White
+];
+
 let bubbles = [];
+let readyToDraw = false;
 
 fetch("https://e3709bfac366.ngrok-free.app/info", {
   headers: {
@@ -44,13 +50,56 @@ fetch("https://e3709bfac366.ngrok-free.app/info", {
 .then(data => {
   document.body.innerHTML += `<h1 style="color: white; position: absolute; top: 0;">${data.wordOfDay}</h1>`;
 
-  const colorMap = {
-    gray: [139, 148, 153, 100],
-    orange: [245, 170, 66, 100],
-    blue: [122, 177, 215, 100],
-    green: [76, 175, 80, 100]
+  const themeMap = {
+    gray: {
+      bg: [139, 148, 153],
+      bubbles: [
+        [175, 180, 184, 150],
+        [229, 229, 231, 150],
+        [240, 240, 240, 150]
+      ]
+    },
+    green: {
+      bg: [68, 207, 140],
+      bubbles: [
+        [124, 221, 175, 150],
+        [162, 231, 198, 150],
+        [216, 245, 231, 150]
+      ]
+    },
+    pink: {
+      bg: [234, 66, 125],
+      bubbles: [
+        [241, 122, 164, 150],
+        [245, 160, 191, 150],
+        [248, 198, 217, 150]
+      ]
+    },
+    blue: {
+      bg: [45, 186, 214],
+      bubbles: [
+        [108, 207, 228, 150],
+        [153, 220, 236, 150],
+        [212, 241, 252, 150]
+      ]
+    },
+    orange: {
+      bg: [249, 160, 61],
+      bubbles: [
+        [251, 188, 119, 150],
+        [252, 207, 158, 150],
+        [254, 235, 214, 150]
+      ]
+    }
   };
-  bgColor = colorMap[data.colorOfDay] || bgColor;
+
+  const color = data.colorOfDay?.toLowerCase() || "gray";
+  const theme = themeMap[color] || themeMap.gray;
+
+  bgColor = theme.bg;
+  bubblePalette = theme.bubbles;
+
+  readyToDraw = true;
 });
 
 function setup() {
@@ -61,12 +110,14 @@ function setup() {
 }
 
 function draw() {
+  if (!readyToDraw) return;
+
   background(...bgColor);
 
-  let viewportX = width / 7;
-  let viewportY = height / 60;
-  let viewportW = width / 1.5;
-  let viewportH = height;
+  const viewportX = width / 7;
+  const viewportY = height / 60;
+  const viewportW = width / 1.5;
+  const viewportH = height;
 
   for (let b of bubbles) {
     b.update();
@@ -94,11 +145,8 @@ class Bubble {
     this.angle = random(TWO_PI);
     this.radius = random(20, 100);
     this.size = random([10, 10, 20, 20, 40]);
-    this.color = random([
-      color(42, 255, 25, 150),
-      color(229,29, 231, 150),
-      color(75, 10, 14, 150)
-    ]);
+    const c = random(bubblePalette);
+    this.color = color(...c);
     this.speed = random(0.005, 0.01);
   }
 
