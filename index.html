@@ -28,12 +28,13 @@
   };
 </script>
 
+<!-- ✅ p5.js library -->
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
 <script>
-let bgColor = [0, 0, 0, 255]; // initial background (black while loading)
+let bgColor = [0, 0, 0, 255]; // fallback color: black
 let bubbles = [];
-let readyToDraw = false; // <-- key change
+let readyToDraw = false;
 
 fetch("https://9feda6131c3d.ngrok-free.app/info", {
   headers: {
@@ -50,8 +51,9 @@ fetch("https://9feda6131c3d.ngrok-free.app/info", {
     blue: [122, 177, 215, 100],
     green: [76, 175, 80, 100]
   };
+
   bgColor = colorMap[data.colorOfDay] || bgColor;
-  readyToDraw = true; // ✅ allow draw to begin only when data is ready
+  readyToDraw = true;
 });
 
 function setup() {
@@ -62,20 +64,21 @@ function setup() {
 }
 
 function draw() {
-  if (!readyToDraw) return; // ⛔ don't draw until color is loaded
+  if (!readyToDraw) return;
 
   background(...bgColor);
 
-  let viewportX = width / 7;
-  let viewportY = height / 60;
-  let viewportW = width / 1.5;
-  let viewportH = height;
+  const viewportX = width / 7;
+  const viewportY = height / 60;
+  const viewportW = width / 1.5;
+  const viewportH = height;
 
   for (let b of bubbles) {
     b.update();
     b.display();
   }
 
+  // Mask outside viewport
   push();
   fill(...bgColor);
   noStroke();
